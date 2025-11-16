@@ -118,6 +118,7 @@ public static class DbInitializer
             {
                 new Department { Name = "English", Budget = 350000, StartDate = DateTime.Parse("2007-09-01") },
                 new Department { Name = "Mathematics", Budget = 100000, StartDate = DateTime.Parse("2007-09-01") },
+                new Department { Name = "Computing", Budget = 100000, StartDate = DateTime.Parse("2012-09-01") },
                 // add more departments...
             };
 
@@ -127,6 +128,21 @@ public static class DbInitializer
 
         // You can continue adding Courses and Enrollments here...
 
+        if (!context.Courses.Any())
+        {
+            var dept = context.Departments.FirstOrDefault(a => a.Name == "Computing");
+
+            var courses = new List<Course>
+            {
+                new Course { CourseID = 101, Title = "Introduction to Programming", Credits = 5, DepartmentID = dept.DepartmentID},
+                new Course { CourseID = 201, Title = "Harder Programming", Credits = 5, DepartmentID = dept.DepartmentID},
+                new Course { CourseID = 301, Title = "Programming 3", Credits = 5, DepartmentID = dept.DepartmentID}
+
+            };
+
+            context.Courses.AddRange(courses);
+            await context.SaveChangesAsync();
+        }
         Console.WriteLine("Database seeding completed successfully!");
     }
 }

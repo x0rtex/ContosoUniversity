@@ -21,6 +21,6 @@ namespace ContosoUniversity.Models
         [Display(Name = "Start Date")]
         public DateTime StartDate { get; set; }
 
-        public ICollection<Course> Courses { get; set; }
+        public ICollection<Course> Courses { get; set; } = new List<Course>();
     }
 }

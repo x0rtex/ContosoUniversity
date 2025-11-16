@@ -169,7 +169,9 @@ namespace ContosoUniversity.Controllers
                 return NotFound();
             }
 
-            var student = await _context.Students.FindAsync(id);
+            var student = await _context.Students.Include(s => s.Enrollments).FirstOrDefaultAsync(m => m.Id == id);
+
+            PopulateAssignedCourseData(student);
             if (student == null)
             {
                 return NotFound();
@@ -177,12 +179,29 @@ namespace ContosoUniversity.Controllers
             return View(student);
         }
 
+        private void PopulateAssignedCourseData(Student student)
+        {
+            var allCourses = _context.Courses;
+            var studentCourses = new HashSet<int>(student.Enrollments.Select(c => c.CourseID));
+            var viewModel = new List<AssignedCourseData>();
+            foreach (var course in allCourses)
+            {
+                viewModel.Add(new AssignedCourseData
+                {
+                    CourseID = course.CourseID,
+                    Title = course.Title,
+                    Assigned = studentCourses.Contains(course.CourseID)
+                });
+            }
+            ViewData["Courses"] = viewModel;
+        }
+
         // POST: Students/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,LastName,FirstMidName,EnrollmentDate")] Student student)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,LastName,FirstMidName,EnrollmentDate")] Student student, string[] selectedCourses)
         {
             if (id != student.Id)
             {
@@ -193,10 +212,11 @@ namespace ContosoUniversity.Controllers
             {
                 try
                 {
-                    var existingStudent = await _context.Students.FindAsync(student.Id);
+                    var existingStudent = _context.Students.Include(s => s.Enrollments).ThenInclude(e => e.Course).FirstOrDefault(m => m.Id == id);
                     if (existingStudent != null)
                     {
                         _context.Entry(existingStudent).CurrentValues.SetValues(student);
+                        UpdateStudentCourses(selectedCourses, existingStudent);
                         await _context.SaveChangesAsync();
                     }
                 }
@@ -214,6 +234,32 @@ namespace ContosoUniversity.Controllers
                 return RedirectToAction(nameof(Index));
             }
             return View(student);
+        }
+
+        private void UpdateStudentCourses(string[] selectedCourses, Student student)
+        {
+            var allCourses = _context.Courses;
+            var selectedCoursesHS = new HashSet<string>(selectedCourses);
+            var StudentCourses = new HashSet<int>
+                (student.Enrollments.Select(c => c.Course.CourseID));
+            foreach (var course in allCourses)
+            {
+                if (selectedCoursesHS.Contains(course.CourseID.ToString()))
+                {
+                    if (!StudentCourses.Contains(course.CourseID))
+                    {
+                        student.Enrollments.Add(new Enrollment { StudentID = student.Id, CourseID = course.CourseID, Grade = Grade.F});
+                    }
+                }
+                else
+                {
+                     if (StudentCourses.Contains(course.CourseID))
+                    {
+                        Enrollment courseToRemove = student.Enrollments.FirstOrDefault(i => i.CourseID == course.CourseID);
+                        _context.Remove(courseToRemove);
+                    }
+                }
+            }
         }
 
         // GET: Students/Delete/5

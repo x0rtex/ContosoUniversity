@@ -85,7 +85,7 @@ namespace ContosoUniversity.Controllers
         // POST: Instructors/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("FirstMidName,HireDate,LastName,OfficeAssignment")] Instructor instructor, string[] selectedCourses)
+        public async Task<IActionResult> Create([Bind("FirstMidName,HireDate,LastName")] Instructor instructor, string[] selectedCourses, [Bind("Location")] String location)
         {
             if (selectedCourses != null)
             {
@@ -94,6 +94,27 @@ namespace ContosoUniversity.Controllers
                 {
                     var courseToAdd = new CourseAssignment { InstructorID = instructor.Id, CourseID = int.Parse(course) };
                     instructor.CourseAssignments.Add(courseToAdd);
+                }
+            }
+
+            if (location != null)
+            {
+                Console.WriteLine("hey!\n\n\n\n\n\n\n");
+                instructor.OfficeAssignment = new OfficeAssignment { InstructorID = instructor.Id, Location = location };
+            }
+
+            if (!ModelState.IsValid)
+            {
+                // Loop through all errors
+                foreach (var state in ModelState)
+                {
+                    var key = state.Key; // property name
+                    var errors = state.Value.Errors;
+
+                    foreach (var error in errors)
+                    {
+                        Console.WriteLine($"Property: {key}, Error: {error.ErrorMessage}");
+                    }
                 }
             }
             if (ModelState.IsValid)
