@@ -114,6 +114,9 @@ namespace ContosoUniversity.Areas.Identity.Pages.Account
             if (ModelState.IsValid)
             {
                 var user = CreateUser();
+                user.FirstMidName = "";
+                user.LastName = "";
+                //user.FullName = "";
 
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
@@ -155,16 +158,16 @@ namespace ContosoUniversity.Areas.Identity.Pages.Account
             return Page();
         }
 
-        private Person CreateUser()
+        private Student CreateUser()
         {
             try
             {
-                return Activator.CreateInstance<Person>();
+                return Activator.CreateInstance<Student>();
             }
             catch
             {
                 throw new InvalidOperationException($"Can't create an instance of '{nameof(Person)}'. " +
-                    $"Ensure that '{nameof(Person)}' is not an abstract class and has a parameterless constructor, or alternatively " +
+                    $"Ensure that '{nameof(Student)}' is not an abstract class and has a parameterless constructor, or alternatively " +
                     $"override the register page in /Areas/Identity/Pages/Account/Register.cshtml");
             }
         }
