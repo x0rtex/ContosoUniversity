@@ -18,7 +18,7 @@ public static class DbInitializer
         // ---------------------------
         // 1. Ensure Roles Exist
         // ---------------------------
-        string[] roles = new[] { "Admin", "Instructor", "Student" };
+        string[] roles = ["Admin", "Instructor", "Student"];
         foreach (var roleName in roles)
         {
             if (!await roleManager.RoleExistsAsync(roleName))
@@ -28,7 +28,7 @@ public static class DbInitializer
         // ---------------------------
         // 2. Create Admin User
         // ---------------------------
-        string adminEmail = "kim.abercrombie@contoso.com";
+        const string adminEmail = "kim.abercrombie@contoso.com";
         var adminUser = await userManager.FindByEmailAsync(adminEmail);
         if (adminUser == null)
         {
